@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <modules>
+        <module>jvm</module>
+        <module>nio</module>
+        <module>kafka</module>
+        <module>elastic_job</module>
+    </modules>
+
+    <parent>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>14</version>
+    </parent>
+
+    <groupId>com.shadow</groupId>
+    <artifactId>20170526</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <jmh.version>1.19</jmh.version>
+        <junit.version>4.12</junit.version>
+        <scala.binary.version>2.11</scala.binary.version>
+        <scala.version>2.11.8</scala.version>
+        <spark.version>2.1.1</spark.version>
+        <hadoop.version>2.7.3</hadoop.version>
+        <scala.lang.version>2.11.8</scala.lang.version>
+        <kafka.version>0.10.2.1</kafka.version>
+    </properties>
+
+    <dependencies>
+
+
+
+        <!--hadoop -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+        <!--hadoop end -->
+
+        <!-- spark -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-mllib_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <!-- spark  end -->
+
+        <!--test-->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.11</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${jmh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${jmh.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--test end-->
+
+        <dependency>
+            <groupId>com.101tec</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>0.10</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka_2.11 -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <version>0.10.2.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka_2.11 -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.11</artifactId>
+            <version>0.10.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.42</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.typesafe.akka/akka-actor_2.11 -->
+        <!--<dependency>-->
+            <!--<groupId>com.typesafe.akka</groupId>-->
+            <!--<artifactId>akka-actor_${scala.binary.version}</artifactId>-->
+            <!--<version>2.5.2</version>-->
+        <!--</dependency>-->
+
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.commons/commons-compress &ndash;&gt;-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.12</version>
+        </dependency>
+
+
+
+
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <args>
+                                <!--<arg>-make:transitive</arg>-->
+                                <arg>-dependencyfile</arg>
+                                <arg>${project.build.directory}/.scala_dependencies</arg>
+                            </args>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!--<profiles>-->
+        <!--<profile>-->
+            <!--<id>spark-prod</id> &lt;!&ndash; Default profile to run on Spark cluster &ndash;&gt;-->
+            <!--<activation>-->
+                <!--<activeByDefault>true</activeByDefault>-->
+            <!--</activation>-->
+            <!--<dependencyManagement>-->
+                <!--<dependencies>-->
+
+                    <!--<dependency>-->
+                        <!--<groupId>org.apache.spark</groupId>-->
+                        <!--<artifactId>spark-core_${scala.binary.version}</artifactId>-->
+                        <!--<version>${spark.version}</version>-->
+                        <!--<scope>provided</scope>-->
+                    <!--</dependency>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.apache.spark</groupId>-->
+                        <!--<artifactId>spark-sql_${scala.binary.version}</artifactId>-->
+                        <!--<version>${spark.version}</version>-->
+                        <!--<scope>provided</scope>-->
+                    <!--</dependency>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.apache.spark</groupId>-->
+                        <!--<artifactId>spark-streaming_${scala.binary.version}</artifactId>-->
+                        <!--<version>${spark.version}</version>-->
+                        <!--<scope>provided</scope>-->
+                    <!--</dependency>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.apache.spark</groupId>-->
+                        <!--<artifactId>spark-mllib_2.11</artifactId>-->
+                        <!--<version>${spark.version}</version>-->
+                        <!--<scope>provided</scope>-->
+                    <!--</dependency>-->
+                <!--</dependencies>-->
+            <!--</dependencyManagement>-->
+        <!--</profile>-->
+        <!--<profile>-->
+            <!--<id>spark-dev</id> &lt;!&ndash; (Spark included profile) &ndash;&gt;-->
+            <!--<activation>-->
+                <!--<activeByDefault>false</activeByDefault>-->
+            <!--</activation>-->
+            <!--<dependencyManagement>-->
+                <!--<dependencies>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.scala-lang</groupId>-->
+                        <!--<artifactId>scala-library</artifactId>-->
+                        <!--<version>${scala.lang.version}</version>-->
+                        <!--<scope>compile</scope>-->
+                    <!--</dependency>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.apache.spark</groupId>-->
+                        <!--<artifactId>spark-core_${scala.binary.version}</artifactId>-->
+                        <!--<version>${spark.version}</version>-->
+                        <!--<scope>compile</scope>-->
+                    <!--</dependency>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.apache.spark</groupId>-->
+                        <!--<artifactId>spark-sql_${scala.binary.version}</artifactId>-->
+                        <!--<version>${spark.version}</version>-->
+                        <!--<scope>compile</scope>-->
+                    <!--</dependency>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.apache.spark</groupId>-->
+                        <!--<artifactId>spark-streaming_${scala.binary.version}</artifactId>-->
+                        <!--<version>${spark.version}</version>-->
+                        <!--<scope>compile</scope>-->
+                    <!--</dependency>-->
+                    <!--<dependency>-->
+                        <!--<groupId>org.apache.spark</groupId>-->
+                        <!--<artifactId>spark-mllib_2.11</artifactId>-->
+                        <!--<version>${spark.version}</version>-->
+                        <!--<scope>compile</scope>-->
+                    <!--</dependency>-->
+                <!--</dependencies>-->
+            <!--</dependencyManagement>-->
+        <!--</profile>-->
+    <!--</profiles>-->
+
+</project>
