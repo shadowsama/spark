@@ -8,7 +8,6 @@ import org.apache.kafka.common.utils.Utils
 /**
   * Created by shadow on 2017/6/25 0025.
   */
-
 case class EndPoint(val host: String,val port:Int){}
 
 class Kserver {
@@ -22,9 +21,9 @@ class Kserver {
 
 object Kserver{
 
-  private val endPoint = EndPoint("192.168.109.1",8080)
+  private val endPoint = EndPoint("192.168.109.1",9200)
   private val processor = new Processor
-  private val acceptor = new Acceptor(endPoint,1024,1025,Array(processor))
+  private val acceptor = new Acceptor(endPoint,1024,1024,Array(processor))
 
   def startUp(): Unit ={
 

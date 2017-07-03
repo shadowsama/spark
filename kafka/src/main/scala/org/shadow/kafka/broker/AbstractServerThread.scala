@@ -1,7 +1,12 @@
 package org.shadow.kafka.broker
 
-import java.net.{InetSocketAddress, SocketException}
-import java.nio.channels.{SelectionKey, ServerSocketChannel, SocketChannel, Selector => NSelector}
+import java.io.{EOFException, IOException}
+import java.lang.String.format
+import java.net.{InetSocketAddress, Socket, SocketException}
+import java.nio.ByteBuffer
+import java.nio.channels.{ClosedChannelException, SelectionKey, ServerSocketChannel, SocketChannel, Selector => NSelector}
+import java.util
+import java.util.Iterator
 import java.util.concurrent.{ConcurrentLinkedQueue, CountDownLatch}
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -62,16 +67,16 @@ private[kafka] class Acceptor(val endPoint: EndPoint, val sendBufferSize: Int,
                               val recvBufferSize: Int, processors: Array[Processor]) extends AbstractServerThread {
 
   //1 打开路复用器
-  private val nioSelector = NSelector.open()
+  private val nioTcpSelector = NSelector.open()
 
   val serverChannel = openServerSocket(endPoint.host, endPoint.port)
 
   this.synchronized {
-      processors.foreach { processor =>
-        logInfo(s"$processor started")
-        new Thread(processor,"processor").start()
-      }
+    processors.foreach { processor =>
+      logInfo(s"$processor started")
+      new Thread(processor, "processor").start()
     }
+  }
 
   /**
     * Accept loop that checks for new connection attempts
@@ -79,7 +84,7 @@ private[kafka] class Acceptor(val endPoint: EndPoint, val sendBufferSize: Int,
   def run() {
 
     // 把服务器通道注册到多路复用器上，并且监听阻塞事件
-    serverChannel.register(nioSelector, SelectionKey.OP_ACCEPT)
+    serverChannel.register(nioTcpSelector, SelectionKey.OP_ACCEPT)
     // acceptor 运行完成
     startupComplete()
     logInfo("acceptor running!!!")
@@ -89,11 +94,11 @@ private[kafka] class Acceptor(val endPoint: EndPoint, val sendBufferSize: Int,
       // 原子变量 voltile
       while (isRunning) {
         try {
-          //
-          val ready = nioSelector.select(500)
+          // 500ms 调用一次， 没有加时间则一直阻塞中
+          val ready = nioTcpSelector.select(500)
           if (ready > 0) {
             //返回多路复用器已经选择的结果集
-            val keys = nioSelector.selectedKeys()
+            val keys = nioTcpSelector.selectedKeys()
             val iter = keys.iterator()
             while (iter.hasNext && isRunning) {
               try {
@@ -101,8 +106,9 @@ private[kafka] class Acceptor(val endPoint: EndPoint, val sendBufferSize: Int,
                 val key = iter.next
                 //4 直接移除
                 iter.remove()
-                if (key.isAcceptable){
-                  logInfo("acceped !! ")
+                if (key.isAcceptable) {
+                  logInfo(s"acceped connection $key")
+
                   accept(key, processors(currentProcessor))
                 }
 
@@ -128,7 +134,7 @@ private[kafka] class Acceptor(val endPoint: EndPoint, val sendBufferSize: Int,
       logDebug("Closing server socket and selector.")
 
       CoreUtils.swallow(serverChannel.close())
-      CoreUtils.swallow(nioSelector.close())
+      CoreUtils.swallow(nioTcpSelector.close())
       shutdownComplete()
     }
   }
@@ -148,6 +154,7 @@ private[kafka] class Acceptor(val endPoint: EndPoint, val sendBufferSize: Int,
     serverChannel.configureBlocking(false)
     serverChannel.socket().setReceiveBufferSize(recvBufferSize)
     try {
+      // 4 监听端口的tcp连接
       serverChannel.socket.bind(socketAddress)
       logInfo("Awaiting socket connections on %s:%d.".format(socketAddress.getHostString, serverChannel.socket.getLocalPort))
     } catch {
@@ -167,7 +174,7 @@ private[kafka] class Acceptor(val endPoint: EndPoint, val sendBufferSize: Int,
   def accept(key: SelectionKey, processor: Processor) {
     //1 获取服务通道
     val serverSocketChannel = key.channel().asInstanceOf[ServerSocketChannel]
-    //2 执行阻塞方法
+    //2 执行阻塞方法, 获取socketChannel
     val socketChannel = serverSocketChannel.accept()
     try {
       socketChannel.configureBlocking(false)
@@ -183,54 +190,129 @@ private[kafka] class Acceptor(val endPoint: EndPoint, val sendBufferSize: Int,
     }
   }
 
-  override def wakeup(): Unit = {}
+  override def wakeup(): Unit = {
+    nioTcpSelector.wakeup()
+  }
 }
 
 private[kafka] class Processor() extends AbstractServerThread() {
 
 
+  private val readBuf = ByteBuffer.allocate(1024)
   private val newConnections = new ConcurrentLinkedQueue[SocketChannel]()
   private val inflightResponses = mutable.Map[String, RequestChannel.Response]()
 
-  private val selector = NSelector.open()
+  private var selector:NSelector = null
 
   /**
     * Queue up a new connection for reading
     */
   def accept(socketChannel: SocketChannel) {
     newConnections.add(socketChannel)
+    logInfo(s"$this add socketChannel to queen ${newConnections.size()} ")
+   // wakeup()
+  }
 
-    logInfo("add socketChannel to queen ")
-    wakeup()
+  private def channelFor(key: SelectionKey) = key.channel.asInstanceOf[SocketChannel]
+
+  @throws[IOException]
+  private def read(key: SelectionKey) = {
+
+    logInfo(s"read data")
+    val socketChannel = channelFor(key)
+    var request = null
+
+    //1 清空缓冲区旧的数据
+    this.readBuf.clear
+    //2 获取之前注册的socket通道对象
+    val sc = key.channel.asInstanceOf[SocketChannel]
+    //3 读取数据
+    val count = sc.read(this.readBuf)
+    //4 如果没有数据
+    if (count == -1) {
+      key.channel.close()
+      key.cancel()
+    }
+    //5 有数据则进行读取 读取之前需要进行复位方法(把position 和limit进行复位)
+    this.readBuf.flip
+    //6 根据缓冲区的数据长度创建相应大小的byte数组，接收缓冲区的数据
+    val bytes = new Array[Byte](this.readBuf.remaining)
+    //7 接收缓冲区数据
+    this.readBuf.get(bytes)
+    //8 打印结果
+    val body = new String(bytes).trim
+    System.out.println("Server : " + body)
+  }
+
+  @throws[ClosedChannelException]
+  private def configureNewConnections() = {
+
+
+   if(!newConnections.isEmpty) {
+      var channel = newConnections.poll
+      logInfo("Listening to new connection from " + channel.socket.getRemoteSocketAddress)
+      try {
+        val selectionKey = channel.register(selector, SelectionKey.OP_READ)
+        logInfo(s"$selectionKey")
+      } catch {
+        case e => e.printStackTrace()
+      }
+    }
+  }
+
+  /**
+    * @return the selector
+    */
+  def getSelector = {
+    if (selector == null) try
+      selector = NSelector.open()
+    catch {
+      case e: IOException =>
+        throw new RuntimeException(e)
+    }
+    selector
   }
 
   override def run() {
     startupComplete()
-    while (isRunning) {
-      try {
-        if (newConnections.size()>0){
-          println(newConnections.poll())
+
+    // null pontion
+    getSelector
+    while (true) {
+
+      configureNewConnections()
+      selector
+      var ready = getSelector.select(500)
+
+
+      if (ready > 0) {
+
+        val iter = getSelector.selectedKeys.iterator
+        logInfo(s"a valid connection")
+        while ( {
+          iter.hasNext && isRunning
+        }) {
+
+          var key = iter.next
+          iter.remove()
+          if (key.isReadable) read(key)
+          //else if (key.isWritable)// write(key)
+          //else if (!key.isValid) // close(key)
+          //  else throw new IllegalStateException("Unrecognized key state for processor thread.")
+
+
         }
-
-
-      } catch {
-        // We catch all the throwables here to prevent the processor thread from exiting. We do this because
-        // letting a processor exit might cause a bigger impact on the broker. Usually the exceptions thrown would
-        // be either associated with a specific socket channel or a bad request. We just ignore the bad socket channel
-        // or request. This behavior might need to be reviewed if we see an exception that need the entire broker to stop.
-        case e: ControlThrowable => throw e
-        case e: Throwable =>
-         logError("Processor got uncaught exception.", e)
       }
+
+
     }
 
 
     //(closeAll())
-    shutdownComplete()
+    //shutdownComplete()
   }
 
-  override def wakeup(): Unit ={
-
-    selector.wakeup()
+  override def wakeup(): Unit = {
+    getSelector.wakeup()
   }
 }

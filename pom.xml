@@ -7,7 +7,7 @@
         <module>jvm</module>
         <module>nio</module>
         <module>kafka</module>
-        <module>elastic_job</module>
+        <!--<module>elastic_job</module>-->
     </modules>
 
     <parent>

@@ -3,10 +3,7 @@ package com.shadow.nio;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.Iterator;
 
 public class Server implements Runnable{
@@ -74,8 +71,12 @@ public class Server implements Runnable{
 	}
 	
 	private void write(SelectionKey key){
-		//ServerSocketChannel ssc =  (ServerSocketChannel) key.channel();
-		//ssc.register(this.seletor, SelectionKey.OP_WRITE);
+		ServerSocketChannel ssc =  (ServerSocketChannel) key.channel();
+		try {
+			ssc.register(this.seletor, SelectionKey.OP_WRITE);
+		} catch (ClosedChannelException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void read(SelectionKey key) {
