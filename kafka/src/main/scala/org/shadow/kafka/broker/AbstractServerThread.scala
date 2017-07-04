@@ -202,7 +202,7 @@ private[kafka] class Processor() extends AbstractServerThread() {
   private val newConnections = new ConcurrentLinkedQueue[SocketChannel]()
   private val inflightResponses = mutable.Map[String, RequestChannel.Response]()
 
-  private var selector:NSelector = null
+  private var selector:NSelector = getSelector
 
   /**
     * Queue up a new connection for reading
@@ -212,6 +212,8 @@ private[kafka] class Processor() extends AbstractServerThread() {
     logInfo(s"$this add socketChannel to queen ${newConnections.size()} ")
    // wakeup()
   }
+
+
 
   private def channelFor(key: SelectionKey) = key.channel.asInstanceOf[SocketChannel]
 
@@ -296,10 +298,9 @@ private[kafka] class Processor() extends AbstractServerThread() {
           var key = iter.next
           iter.remove()
           if (key.isReadable) read(key)
-          //else if (key.isWritable)// write(key)
-          //else if (!key.isValid) // close(key)
-          //  else throw new IllegalStateException("Unrecognized key state for processor thread.")
-
+         // else if (key.isWritable)  write(key)
+          else if (!key.isValid) close(channelFor(key))
+            else throw new IllegalStateException("Unrecognized key state for processor thread.")
 
         }
       }
@@ -309,10 +310,21 @@ private[kafka] class Processor() extends AbstractServerThread() {
 
 
     //(closeAll())
-    //shutdownComplete()
+    shutdownComplete()
   }
 
   override def wakeup(): Unit = {
     getSelector.wakeup()
+  }
+
+  /**
+    * Close `channel` and decrement the connection count.
+    */
+   override def close(channel: SocketChannel) {
+    if (channel != null) {
+      logInfo("Closing connection from " + channel.socket.getRemoteSocketAddress())
+      CoreUtils.swallowError(channel.socket().close())
+      CoreUtils.swallowError(channel.close())
+    }
   }
 }
