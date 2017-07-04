@@ -316,10 +316,6 @@ private[kafka] class Processor() extends AbstractServerThread() {
   override def wakeup(): Unit = {
     getSelector.wakeup()
   }
-
-  /**
-    * Close `channel` and decrement the connection count.
-    */
    override def close(channel: SocketChannel) {
     if (channel != null) {
       logInfo("Closing connection from " + channel.socket.getRemoteSocketAddress())
