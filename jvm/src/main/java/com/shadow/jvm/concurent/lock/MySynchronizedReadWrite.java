@@ -4,24 +4,19 @@ package com.shadow.jvm.concurent.lock;
 /**
  * 一个线程又要读又要写，用synchronize来实现的话，读写操作都只能锁住后一个线程一个线程地进行
  * @author
- *
  */
 public class MySynchronizedReadWrite {
     
     public static void main(String[] args)  {
         final MySynchronizedReadWrite test = new MySynchronizedReadWrite();
-         
-        new Thread(){
-            public void run() {
+
+          Runnable r=  () ->{
                 test.get(Thread.currentThread());
             };
-        }.start();
-         
-        new Thread(){
-            public void run() {
-                test.get(Thread.currentThread());
-            };
-        }.start();
+
+
+        new Thread(r,"t1").start();
+        new Thread(r,"t2").start();
          
     }  
      

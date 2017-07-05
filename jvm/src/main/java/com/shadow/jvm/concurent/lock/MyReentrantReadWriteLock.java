@@ -15,22 +15,18 @@ public class MyReentrantReadWriteLock {
      
 	    public static void main(String[] args)  {
 	        final MyReentrantReadWriteLock test = new MyReentrantReadWriteLock();
-	         
-	        new Thread(){
-	            public void run() {
+
+	           Runnable r=() ->{
 	                test.get(Thread.currentThread());
 	                test.write(Thread.currentThread());
 	            };
-	        }.start();
+
+			new Thread(r,"t1").start();
+			new Thread(r,"t2").start();
+
 	         
-	        new Thread(){
-	            public void run() {
-	                test.get(Thread.currentThread());
-	                test.write(Thread.currentThread());
-	            };
-	        }.start();
-	         
-	    }  
+	    }
+
 	    
 	    /**
 	     * 读操作,用读锁来锁定
