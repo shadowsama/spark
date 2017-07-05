@@ -2,7 +2,7 @@ package com.shadow.jvm.concurent.singleton;
 
 public class DubbleSingleton {
 
-	private static DubbleSingleton ds;
+	private  volatile  static  DubbleSingleton ds;
 	
 	public  static DubbleSingleton getDs(){
 		if(ds == null){

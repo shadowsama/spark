@@ -16,12 +16,9 @@ public class syncTest {
     MyThread myThread;
 
     static class MyThread implements Runnable {
-
         private int count = 0;
-
         @Override
         public void run() {
-
             count++;
             System.out.println(Thread.currentThread().getName() + " >> " + count);
         }

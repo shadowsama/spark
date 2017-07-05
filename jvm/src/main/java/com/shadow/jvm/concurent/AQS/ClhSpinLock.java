@@ -43,7 +43,6 @@ class ClhSpinLock {
         private volatile boolean locked;
     }
 
-
     public static void main(String[] args) throws  Exception {
         final ClhSpinLock lock = new ClhSpinLock();
         lock.lock();

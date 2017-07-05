@@ -1,8 +1,6 @@
 package org.shadow.scala.cases
 
-/**
-  * Created by ZX on 2016/4/5.
-  */
+
 object CaseDemo03 extends App{
 
   val arr = Array(0, 1, 5, 7)
