@@ -68,7 +68,7 @@ class SimpleLock extends AbstractQueuedSynchronizer {
                 }
             }).start();
             // 简单的让线程按照for循环的顺序阻塞在lock上
-            Thread.sleep(100);
+           // Thread.sleep(100);
         }
 
         System.out.println("main thread unlock!");

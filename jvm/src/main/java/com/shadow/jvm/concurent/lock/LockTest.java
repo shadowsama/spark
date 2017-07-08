@@ -15,6 +15,7 @@ public class LockTest {
 
     public static void main(String[] args) {
 
+
         Runnable r = () -> {
             Thread thread = Thread.currentThread();
             lock.lock();
@@ -29,6 +30,7 @@ public class LockTest {
                 lock.unlock();
             }
 
+
         };
 
         /**
@@ -41,6 +43,7 @@ public class LockTest {
         new Thread(r,"t1").start();
         new Thread(r,"t2").start();
     }
+
 
 
 }
