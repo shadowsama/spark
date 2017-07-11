@@ -129,3 +129,5 @@ src/test/
 
 spark-warehouse
 /src/main/scala/org/shadow/saprkcsv.scala
+/hadoop/src/main/java/cn/itcast/bigdata/
+/data-algorithms-book-master/
