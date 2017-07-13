@@ -22,6 +22,7 @@ class Chooser[T <% Ordered[T]] {
 }
 
 
+
 class person(val name:String, val age:Int)
 
 
@@ -35,6 +36,7 @@ object Chooser{
 //      }
 //    }
 
+    // 比较规则
     implicit val person2OrderedDesc = (p : person) => new Ordered[person] {
       override def compare(that: person): Int = {
         p.age - that.age
