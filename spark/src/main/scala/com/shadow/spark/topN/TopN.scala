@@ -1,35 +1,28 @@
 package com.shadow.spark.topN
 
-import org.apache.spark.TaskContext
-import org.apache.spark.rdd.{MapPartitionsRDD, RDD}
+
+import java.util.concurrent.{ExecutorService, Executors}
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-
-import scala.collection.SortedMap
-import scala.reflect.ClassTag
+import org.shadow.core.Logging
 
 
-class TopN {
-
-}
+object TopN extends Logging{
 
 
-object TopN {
-
-
-
-
+  private  val threadPool = Executors.newCachedThreadPool
   def main(args: Array[String]): Unit = {
 
     val spark = SparkSession.
       builder().
-      appName("TopN")
-        .master("local[*]")
+      appName("TopN7")
+      .master("local[1]")
       .getOrCreate()
 
 
     val sc = spark.sparkContext
 
-   val rdd1 =  sc.textFile("file:\\D:\\_20170526\\spark\\src\\main\\scala\\com\\shadow\\spark\\topN\\input").map(l => {
+    val rdd1 : RDD[((String,Array[String]))] =  sc.textFile("hdfs://master:9000/topN").map(l => {
        val token = l.split(",")
        (token(2), token)})
 
@@ -55,11 +48,11 @@ object TopN {
        iter.toList.map(x => "[partID:" +  index + ", val: " + x + "]").iterator
     }
 
+    rdd1.mapPartitionsWithIndex(func).collect().foreach(logInfo(_))
 
-      rdd1.mapPartitionsWithIndex(func).collect().foreach(println)
 
-
-      spark.stop()
+    //Thread.sleep(Integer.MAX_VALUE)
+    spark.stop()
 
 
 

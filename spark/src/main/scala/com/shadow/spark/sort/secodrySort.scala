@@ -40,6 +40,7 @@ object secodrySort {
         }
       }
 
+
       val sorted = valueToKey.repartitionAndSortWithinPartitions(new CustomPartitioner(partitions))
 
       val result = sorted.map {

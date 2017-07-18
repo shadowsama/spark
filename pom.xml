@@ -18,26 +18,84 @@
         <version>14</version>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>cloudera.repos</id>
+            <url>https://repository.cloudera.com/content/groups/cdh-releases-rcs</url>
+            <name>Cloudera Public Repositories</name>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>cloudera.snapshots.repo</id>
+            <url>https://repository.cloudera.com/content/repositories/snapshots</url>
+            <name>Cloudera Snapshots Repository</name>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>cloudera</id>
+            <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+        <repository>
+            <id>cloudera.public.repo</id>
+            <url>https://repository.cloudera.com/artifactory/public</url>
+        </repository>
+    </repositories>
+
     <groupId>com.shadow</groupId>
     <artifactId>20170526</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
+        <!--<jmh.version>1.19</jmh.version>-->
+        <!--<junit.version>4.12</junit.version>-->
+        <!--<scala.binary.version>2.11</scala.binary.version>-->
+        <!--<scala.version>2.11.8</scala.version>-->
+        <!--<spark.version>2.1.1</spark.version>-->
+        <!--<hadoop.version>2.6.4</hadoop.version>-->
+        <!--<scala.lang.version>2.11.8</scala.lang.version>-->
+        <!--<kafka.version>0.10.2.1</kafka.version>-->
+        <!--<CodeCacheSize>512m</CodeCacheSize>-->
+        <!--<java.version>1.8</java.version>-->
+        <!--<hbase.version>0.98.9-hadoop2</hbase.version>-->
         <jmh.version>1.19</jmh.version>
         <junit.version>4.12</junit.version>
         <scala.binary.version>2.11</scala.binary.version>
         <scala.version>2.11.8</scala.version>
-        <spark.version>2.1.1</spark.version>
-        <hadoop.version>2.6.4</hadoop.version>
+        <spark.version>2.1.0.cloudera1</spark.version>
+        <hadoop.version>2.6.0-cdh5.12.0</hadoop.version>
         <scala.lang.version>2.11.8</scala.lang.version>
         <kafka.version>0.10.2.1</kafka.version>
         <CodeCacheSize>512m</CodeCacheSize>
         <java.version>1.8</java.version>
         <hbase.version>0.98.9-hadoop2</hbase.version>
+        <zk.version>3.4.5-cdh5.12.0</zk.version>
+        <fasterxml.jackson.version>2.6.5</fasterxml.jackson.version>
     </properties>
     <dependencyManagement>
+
+
         <dependencies>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${fasterxml.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${fasterxml.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${fasterxml.jackson.version}</version>
+            </dependency>
             <!--hadoop -->
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -204,6 +262,12 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>${hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -662,12 +726,26 @@
                         <version>1.16.8</version>
                         <scope>provided</scope>
                     </dependency>
+                    <dependency>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                        <version>${fasterxml.jackson.version}</version>
+                        <scope>provided</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                        <version>${fasterxml.jackson.version}</version>
+                        <scope>provided</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-annotations</artifactId>
+                        <version>${fasterxml.jackson.version}</version>
+                        <scope>provided</scope>
+                    </dependency>
                 </dependencies>
             </dependencyManagement>
-
-
-
-            <dependencies></dependencies>
 
         </profile>
         <profile>
@@ -677,6 +755,21 @@
             </activation>
             <dependencyManagement>
                 <dependencies>
+                    <dependency>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                        <version>${fasterxml.jackson.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                        <version>${fasterxml.jackson.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-annotations</artifactId>
+                        <version>${fasterxml.jackson.version}</version>
+                    </dependency>
                     <!--hadoop -->
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>

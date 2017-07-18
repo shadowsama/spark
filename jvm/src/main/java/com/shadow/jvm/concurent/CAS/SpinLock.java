@@ -56,11 +56,15 @@ public class SpinLock {
 
          final SpinLock spinLock = new SpinLock();
 
-        List<Thread> collect = IntStream.range(0, 10).mapToObj(i -> new Thread(() -> {
+         Runnable r =() -> {
             spinLock.lock();
-            logger.info((Thread.currentThread().getName()+ " executed, "+spinLock.sign.get().getName()));
+            logger.info((Thread.currentThread().getName() + " executed, " + spinLock.sign.get().getName()));
             spinLock.unlock();
-        })).collect(Collectors.toList());
+        };
+
+        List<Runnable> collect = IntStream.range(0, 10).mapToObj(i ->
+                r
+        ).collect(Collectors.toList());
 
         collect.forEach(thread -> threadPool.execute(thread));
 
