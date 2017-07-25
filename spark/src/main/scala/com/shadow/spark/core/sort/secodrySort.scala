@@ -1,4 +1,4 @@
-package com.shadow.spark.sort
+package com.shadow.spark.core.sort
 
 import org.apache.spark.{SparkConf, SparkContext}
 
