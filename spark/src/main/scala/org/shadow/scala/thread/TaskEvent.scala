@@ -1,6 +1,8 @@
 package org.shadow.scala.thread
 
-
+/**
+  * Created by ZX on 2016/3/29.
+  */
 trait TaskEvent
 
 case class TaskSubmitted(name: String) extends TaskEvent

@@ -1,5 +1,7 @@
 package com.shadow.spark.core.join
 
+import java.util.concurrent.TimeUnit
+
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -58,15 +60,16 @@ object SparkLeftOuterJoin {
 //    (u2,(p1,Some(GA)))
 //    (u2,(p2,Some(GA)))
   
-//    val productByLocations = productLocations.groupByKey()
-//
-//    val productWithUniqueLocations = productByLocations.mapValues(_.toSet) // Converting toSet removes duplicates.
-//
-//    val result = productWithUniqueLocations.map(t => (t._1, t._2.size)) // Return (product, location count) tuple.
+    val productByLocations = productLocations.groupByKey()
+
+    val productWithUniqueLocations = productByLocations.mapValues(_.toSet) // Converting toSet removes duplicates.
+
+     val result = productWithUniqueLocations.map(t => (t._1, t._2.size)) // Return (product, location count) tuple.
 //
  //   result.saveAsTextFile(output) // Saves output to the file.
 
     // done
+    TimeUnit.SECONDS.sleep(Int.MaxValue)
     sc.stop()
   }
 }

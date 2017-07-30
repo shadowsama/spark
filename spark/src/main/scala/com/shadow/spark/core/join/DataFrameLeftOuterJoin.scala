@@ -1,5 +1,7 @@
 package com.shadow.spark.core.join
 
+import java.util.concurrent.TimeUnit
+
 import org.apache.spark.sql.Row
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -75,8 +77,8 @@ object DataFrameLeftOuterJoin {
     val product_location_distinct = product_location.distinct // Getting only disting values
     val products = product_location_distinct.groupBy("productId").count()
     products.show() // Print first 20 records on the console
-    products.write.save(output + "/approach1") // Saves output in compressed Parquet format, recommended for large projects.
-    products.rdd.saveAsTextFile(output + "/approach1_textFormat") // Converts DataFram to RDD[Row] and saves it to in text file. To see output use cat command, e.g. cat output/approach1_textFormat/part-00*
+   // products.write.save(output + "/approach1") // Saves output in compressed Parquet format, recommended for large projects.
+  //  products.rdd.saveAsTextFile(output + "/approach1_textFormat") // Converts DataFram to RDD[Row] and saves it to in text file. To see output use cat command, e.g. cat output/approach1_textFormat/part-00*
 
 
     // Use below for Spark 2.0.0
@@ -88,10 +90,11 @@ object DataFrameLeftOuterJoin {
     // Using Query 3 given on Page 88
     val sqlResult = sql("SELECT productId, count(distinct location) locCount FROM transactions LEFT OUTER JOIN users ON transactions.userId = users.userId group by productId")
     sqlResult.show() // Print first 20 records on the console
-    sqlResult.write.save(output + "/approach2") // Saves output in compressed Parquet format, recommended for large projects.
-    sqlResult.rdd.saveAsTextFile(output + "/approach2_textFormat") // Converts DataFram to RDD[Row] and saves it to in text file. To see output use cat command, e.g. cat output/approach2_textFormat/part-00*
+    //sqlResult.write.save(output + "/approach2") // Saves output in compressed Parquet format, recommended for large projects.
+   // sqlResult.rdd.saveAsTextFile(output + "/approach2_textFormat") // Converts DataFram to RDD[Row] and saves it to in text file. To see output use cat command, e.g. cat output/approach2_textFormat/part-00*
     // Approach 2 ends
 
+    TimeUnit.SECONDS.sleep(Int.MaxValue)
     // done
     spark.stop()
   }

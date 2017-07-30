@@ -1,7 +1,6 @@
 package org.shadow.scala.cases
 
 
-// 偏函数 模式匹配的一种
 object PartialFuncDemo  {
 
   def func1: PartialFunction[String, Int] = {
